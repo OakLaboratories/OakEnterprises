@@ -1,0 +1,921 @@
+; Extensions
+extensions [bitmap]
+extensions [sound]
+;-------------------------------------------------------------------------------------------------------------------------------------------------------
+; Breeds and Variables
+globals [movement power-up-state level change? restart]
+breed [players player]
+breed [enemies enemy]
+breed [bosses boss]
+breed [powerUps powerUp]
+
+players-own [health speed strength]
+enemies-own [species health speed strength age]
+bosses-own [health]
+patches-own [state] ; "fast" "strong" "long-range"
+powerUps-own [function]
+;-------------------------------------------------------------------------------------------------------------------------------------------------------
+;Reporters
+to-report my_health
+  report [health] of player 0
+end
+;-------------------------------------------------------------------------------------------------------------------------------------------------------
+; Basic Player Functions
+to direction [degree colour]
+  set heading degree
+  if [pcolor] of patch-ahead speed = colour or [pcolor] of patch-ahead 1 = 72.5 [fd speed]
+end
+
+to direction-boss [degree colour]
+  set heading degree
+  if [pcolor] of patch-ahead 1 = colour or [pcolor] of patch-ahead 1 = blue [fd speed]
+end
+
+to attack_fast
+  let x enemies in-radius 3 with [species = "strong"]
+  if any? x [
+    ask min-one-of x [distance myself] [set health health - 4 * [strength] of myself]
+  ]
+  let y enemies in-radius 3 with [species = "fast"]
+  if any? y [
+    ask min-one-of y [distance myself] [set health health - 2 * [strength] of myself]
+  ]
+  let z enemies in-radius 3 with [species = "long-range"]
+  if any? z [
+    ask min-one-of z [distance myself] [set health health - 1 * [strength] of myself]
+  ]
+end
+
+to attack_strong
+  let x enemies in-radius 3 with [species = "long-range"]
+  if any? x [
+    ask min-one-of x [distance myself] [set health health - 8 * [strength] of myself]
+  ]
+  let y enemies in-radius 3 with [species = "strong"]
+  if any? y [
+    ask min-one-of y [distance myself] [set health health - 4 * [strength] of myself]
+  ]
+  let z enemies in-radius 3 with [species = "fast"]
+  if any? z [
+    ask min-one-of z [distance myself] [set health health - 2 * [strength] of myself]
+  ]
+end
+
+to attack_long-range
+  let x enemies in-radius 5 with [species = "fast"]
+  if any? x [
+    ask min-one-of x [distance myself] [set health health - 4 * [strength] of myself]
+  ]
+  let y enemies in-radius 5 with [species = "long-range"]
+  if any? y [
+    ask min-one-of y [distance myself] [set health health - 2 * [strength] of myself]
+  ]
+  let z enemies in-radius 5 with [species = "strong"]
+  if any? z [
+    ask min-one-of z [distance myself] [set health health - 1 * [strength] of myself]
+  ]
+end
+
+to health_check
+  ask players [if not any? enemies in-radius 3 and health < 100 [set health health + .1]]
+  ask players [if health < 4 [die]]
+  if count players = 0 [
+    wait 2 
+    set restart true
+  ]
+end
+;-------------------------------------------------------------------------------------------------------------------------------------------------------
+; Basic Power-ups Functions
+to create-power-ups
+  if power-up-state < 4 [
+    if 75 > random 1000 [
+      ask one-of patches with [pcolor = 16.6 ] [
+        sprout 1 [
+          set breed powerUps 
+          set function one-of ["health" "speed" "strength"]
+        ]
+      ]
+    ]
+    set power-up-state power-up-state + 1
+  ]
+  ask powerUps with [function = "strength"] [set shape "box" set size 2 set color yellow]
+  ask powerUps with [function = "health"] [set shape "box" set size 2 set color blue]
+;  ask powerUps with [function = "speed"] [set shape "box" set size 1 set color green]
+end
+
+to powerups?
+    ask players [
+    if any? powerUps-here with [function = "health"] [
+      reset-timer 
+      set health 100 
+      set color blue 
+      set size 5 
+      wait .5 
+      set size 1 
+      ask powerUps [die]
+    ]
+  ]
+  ask players [
+    if any? powerUps-here with [function = "strength"] [
+      reset-timer 
+      set strength 2 
+      set color yellow 
+      set size 5
+      wait .5 
+      set size 1 
+      ask powerUps [die]
+    ]
+  ]
+  ask players [
+    if any? powerUps-here with [function = "speed"] [
+      reset-timer 
+      set speed 2 
+      set color green 
+      set size 5 
+      wait .5 
+      set size 1 
+      ask powerUps [die]
+    ]
+  ]
+end
+;-------------------------------------------------------------------------------------------------------------------------------------------------------
+; Basic Enemy Functions
+to fast_enemy_setup
+  set speed 2
+  set strength 5
+  set health 15
+  set age "old"
+end
+
+to fast_enemy_go
+  if any? players in-radius 5 [
+    face player 0
+    ifelse any? players in-radius 3 [fd 1] [fd speed]
+    rt random 30
+    lt random 30
+  ]  
+  if any? players-here [
+    ask players [
+      set health health - [strength] of myself
+    ]
+  ]
+end
+
+to strong_enemy_setup
+  set speed .5
+  set strength 10
+  set health 20
+  set age "old"
+end
+
+to strong_enemy_go
+  if any? players in-radius 3 [
+    face player 0
+    fd speed
+    rt random 15
+    lt random 15
+  ]  
+  if any? players-here [
+    ask players [
+      set health health - [strength] of myself
+    ]
+  ]
+end
+
+to long-range_enemy_setup
+  set speed 1
+  set strength 3
+  set health 15
+  set age "old"
+end
+
+to long-range_enemy_go
+  if any? players in-radius 10 and not any? players in-radius 3[
+    face player 0
+    fd speed
+    rt random 30
+    lt random 30
+  ]
+  if any? players in-radius 2[
+    face player 0
+    bk speed
+    rt random 30
+    lt random 30
+  ]
+  if any? players in-radius 3 [
+    ask players [
+      set health health - [strength] of myself
+    ]
+  ]
+end
+
+to random_enemies
+  ask one-of patches with [pcolor = 16.6] [
+    if random 100 < 1 and any? players in-radius 10 [
+      sprout 1 [
+        set breed enemies
+        set species one-of ["fast" "strong" "long-range"]
+        set age "young"
+      ]
+    ]
+  ]
+  ask enemies with [species = "fast" and age = "young"] [fast_enemy_setup set color black]
+  ask enemies with [species = "strong" and age = "young"] [strong_enemy_setup]
+  ask enemies with [species = "long-range" and age = "young"] [long-range_enemy_setup]
+  ask enemies [set age "old"]
+end
+;-------------------------------------------------------------------------------------------------------------------------------------------------------
+; Setup and Go - BC
+to setup_BC
+  ;Map Setup
+  ca
+  set movement "normal"
+  set level 1
+  import-pcolors "Map BC.png"
+  ask patch 11 -12 [set pcolor 72.5]
+  ask patches with [pcolor != 16.6 and pcolor != 72.5] [set pcolor one-of [68 49]]
+  ask patch -11 12 [set pcolor one-of [68 49]]
+  set power-up-state 0
+  ;Player Setup
+  create-players 1 [
+    set health 100
+    setxy -11 11
+    set shape "cavemen"
+    set color 28
+    set heading 90
+    set strength 1
+    ]
+  ;Enemy Setup
+   create-enemies 6 [
+     set species one-of ["fast" "strong" "long-range"]
+     while [pcolor != 16.6] [setxy random-xcor random-ycor]
+     set color black
+     ]
+   ask enemies with [species = "fast"] [
+     set shape "pterodactyl"
+     fast_enemy_setup
+   ]
+   ask enemies with [species = "long-range"] [
+     set shape "neanderthal"
+     long-range_enemy_setup
+   ]
+   ask enemies with [species = "strong"] [
+     set shape "st tiger"
+     strong_enemy_setup
+   ]
+   ;Tree Decoration setup
+   ask n-of 7 patches with [pcolor != 16.6] [
+     sprout 1 [
+       set shape "tree" 
+       set color 53 
+       set size 2
+       set heading 0
+       fd 1
+       ]
+   ]
+end
+
+to go_BC
+  ;Power-ups
+  create-power-ups
+  if timer > 20 [
+    ask players [set speed 1 set color 28 set size 1]
+    ask players [set strength 1 set color 28 set size 1]
+  ]
+  if timer < 20 [ask players with [state = "health" ] [set health 100]]
+  ask players [powerups?]
+  ;Enemies
+  ask enemies with [species = "fast"] [fast_enemy_go]
+  ask enemies with [species = "strong"] [strong_enemy_go]
+  ask enemies with [species = "long-range"] [long-range_enemy_go]
+  ask enemies [if health < 3 [die]]
+  random_enemies
+  ask enemies with [species = "fast"] [set shape "pterodactyl"]
+  ask enemies with [species = "strong"] [set shape "st tiger"]
+  ask enemies with [species = "long-range"] [set shape "neanderthal"]
+  ;Players
+  health_check
+  if restart = true [
+    setup_BC
+    set restart false
+  ]
+end
+;-------------------------------------------------------------------------------------------------------------------------------------------------------
+; Setup and Go - Greece
+to setup_Greece
+  ;Map Setup
+  ca
+  set movement "normal"
+  import-pcolors "Map Greece.png"
+  ask patches with [pcolor = 14.9] [set pcolor 16.6]
+  ask patch -1 -1 [set pcolor 72.5]
+  ask patches with [pcolor != 16.6 and pcolor != 72.5] [set pcolor one-of [38 95.5]]
+  ask patch -11 12 [set pcolor one-of [38 95.5]]
+  set power-up-state 0
+  set level 2
+  ;Player Setup
+  create-players 1 [
+    set health 100
+    setxy -1 1
+    set shape "spartan"
+    set color 28
+    set heading 90
+    set strength 1
+    ]
+  ;Enemy Setup
+   create-enemies 6 [
+     set species one-of ["fast" "strong" "long-range"]
+     while [pcolor != 16.6] [setxy random-xcor random-ycor]
+     set color black
+     ]
+   ask enemies with [species = "fast"] [
+     set shape "centaur"
+     fast_enemy_setup
+   ]
+   ask enemies with [species = "long-range"] [
+     set shape "medusa"
+     long-range_enemy_setup
+   ]
+   ask enemies with [species = "strong"] [
+     set shape "cyclops"
+     strong_enemy_setup
+   ]
+   ;Column Decoration setup
+   ask n-of 7 patches with [pcolor != 16.6] [
+     sprout 1 [
+       set shape "column" 
+       set color grey 
+       set size 2
+       set heading 0
+       fd 1
+       ]
+   ]
+end
+
+to go_Greece
+  ;Power-ups
+  create-power-ups
+  if timer > 20 [
+    ask players [set speed 1 set color 28 set size 1]
+    ask players [set strength 1 set color 28 set size 1]
+  ]
+  if timer < 20 [ask players with [state = "health" ] [set health 100]]
+  ask players [powerups?]
+  ;Enemies
+  ask enemies with [species = "fast"] [fast_enemy_go]
+  ask enemies with [species = "strong"] [strong_enemy_go]
+  ask enemies with [species = "long-range"] [long-range_enemy_go]
+  ask enemies [if health < 3 [die]]
+  random_enemies
+  ask enemies with [species = "fast"] [set shape "centaur"]
+  ask enemies with [species = "strong"] [set shape "cyclops"]
+  ask enemies with [species = "long-range"] [set shape "medusa"]
+  ;Players
+  health_check
+  if restart = true [
+    setup_Greece
+    set restart false
+  ]
+end
+;-------------------------------------------------------------------------------------------------------------------------------------------------------
+;Complete Go + Setup
+to setup
+  setup_BC
+end
+
+to go
+  ask players [if pcolor = 72.5 [
+      set level level + 1
+      set change? true]]
+  if level = 1 [go_BC]
+  if level = 2 and change? = true [
+    setup_Greece
+    set change? false
+  ]
+  if level = 2 [go_Greece]
+  wait .1
+end
+;------------------------------------------------------------------------------------------------------------------------------------------------------
+;Bosses
+to setup-tRex-boss
+  sound:play-sound "junglemusic.wav"
+  ca
+  set power-up-state "0"
+  set movement "boss"
+  ask patches [set pcolor blue]
+   create-players 1 [
+    set health 100
+    set shape "cavemen"
+    set color 28
+    set size 2 
+    set heading 90
+    set speed 2
+    ]
+  create-bosses 1 [set health 300 set shape "turtle" set size 6 setxy 0 0]
+  ask n-of 6 patches [set state "human-health"]
+  ask n-of 6 patches [set state "trex-health"]
+  ask one-of patches [set state "bad-human-health"]
+  ask enemies with [species = "fast"] [fast_enemy_setup]
+end
+
+to play-tRex-boss
+  ask patches [set pcolor blue]
+  ask players [if [state] of patch-here = "human-health" [set health health + 20] 
+    if [state] of patch-here = "trex-health" [ask enemies [set health health + 20]]
+    if [state] of patch-here = "bad-human-health"  [set health health - 40 ask patch-here [ask neighbors [set pcolor red wait .5  set pcolor black]]] 
+    
+    ]
+  ask enemies [ ask patches in-cone 4 40 [set pcolor orange] ]
+  ask enemies [if any? players  
+     
+     [
+    face min-one-of players [distance myself] fd .5 wait .1 if any? players-here [ask players-here [set health health - 10] face min-one-of players [distance myself] rt 180 bk 3]]
+  ]
+    ask players [if health < 20 [die]]
+    ask enemies [if health < 3 [die]]
+end
+  
+@#$#@#$#@
+GRAPHICS-WINDOW
+210
+10
+670
+491
+12
+12
+18.0
+1
+10
+1
+1
+1
+0
+0
+0
+1
+-12
+12
+-12
+12
+0
+0
+1
+ticks
+30.0
+
+BUTTON
+23
+78
+128
+111
+Setup
+setup
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+0
+244
+63
+277
+Left
+ask players [direction 270 16.6]
+NIL
+1
+T
+OBSERVER
+NIL
+A
+NIL
+NIL
+1
+
+BUTTON
+126
+244
+189
+277
+Right
+ask players [direction 90 16.6]
+NIL
+1
+T
+OBSERVER
+NIL
+D
+NIL
+NIL
+1
+
+BUTTON
+64
+212
+127
+245
+Up
+ask players [direction 0 16.6]
+NIL
+1
+T
+OBSERVER
+NIL
+W
+NIL
+NIL
+1
+
+BUTTON
+63
+244
+126
+277
+Down
+ask players [direction 180 16.6]
+NIL
+1
+T
+OBSERVER
+NIL
+S
+NIL
+NIL
+1
+
+BUTTON
+20
+120
+107
+153
+Play!
+go
+T
+1
+T
+OBSERVER
+NIL
+P
+NIL
+NIL
+1
+
+BUTTON
+33
+306
+163
+339
+Attack Fast!
+ask players [attack_fast]
+NIL
+1
+T
+OBSERVER
+NIL
+J
+NIL
+NIL
+1
+
+BUTTON
+989
+65
+1101
+98
+NIL
+play-trex-boss
+T
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+987
+26
+1107
+59
+NIL
+setup-trex-boss
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+33
+338
+163
+371
+Attack Strong!
+ask players [attack_strong]
+NIL
+1
+T
+OBSERVER
+NIL
+K
+NIL
+NIL
+1
+
+BUTTON
+33
+371
+163
+404
+Attack Long-Range!
+ask players [attack_long-range]
+NIL
+1
+T
+OBSERVER
+NIL
+L
+NIL
+NIL
+1
+
+MONITOR
+136
+154
+193
+199
+Life
+my_health
+0
+1
+11
+
+@#$#@#$#@
+## WHAT IS IT?
+
+(a general understanding of what the model is trying to show or explain)
+
+## HOW IT WORKS
+
+(what rules the agents use to create the overall behavior of the model)
+
+## HOW TO USE IT
+
+(how to use the model, including a description of each of the items in the Interface tab)
+
+## THINGS TO NOTICE
+
+(suggested things for the user to notice while running the model)
+
+## THINGS TO TRY
+
+(suggested things for the user to try to do (move sliders, switches, etc.) with the model)
+
+## EXTENDING THE MODEL
+
+(suggested things to add or change in the Code tab to make the model more complicated, detailed, accurate, etc.)
+
+## NETLOGO FEATURES
+
+(interesting or unusual features of NetLogo that the model uses, particularly in the Code tab; or where workarounds were needed for missing features)
+
+## RELATED MODELS
+
+(models in the NetLogo Models Library and elsewhere which are of related interest)
+
+## CREDITS AND REFERENCES
+
+(a reference to the model's URL on the web if it has one, as well as any other necessary credits, citations, and links)
+@#$#@#$#@
+default
+true
+0
+Polygon -7500403 true true 150 5 40 250 150 205 260 250
+
+box
+false
+0
+Polygon -7500403 true true 150 285 285 225 285 75 150 135
+Polygon -7500403 true true 150 135 15 75 150 15 285 75
+Polygon -7500403 true true 15 75 15 225 150 285 150 135
+Line -16777216 false 150 285 150 135
+Line -16777216 false 150 135 15 75
+Line -16777216 false 150 135 285 75
+
+cavemen
+false
+13
+Circle -2064490 true true 110 20 80
+Polygon -2064490 true true 108 89 123 194 93 299 108 299 138 299 153 224 168 299 198 299 213 299 183 194 198 89
+Rectangle -7500403 true false 135 75 172 94
+Polygon -2064490 true true 195 90 254 157 225 180 165 105
+Polygon -2064490 true true 105 90 45 154 75 180 135 105
+Polygon -6459832 true false 105 60 195 60 180 120 135 120 105 60
+Line -2064490 true 150 225 165 225
+Polygon -6459832 true false 120 45 105 45 195 45 180 15 120 15 105 45
+Polygon -6459832 true false 120 45 105 75 105 45
+Circle -16777216 true false 149 43 12
+Circle -16777216 true false 152 46 6
+Circle -16777216 true false 172 42 12
+Polygon -10899396 true false 145 203 137 221 145 221 143 237 150 233 152 246 156 234 159 236 155 226 154 222 170 225 153 204 149 198 146 206
+Polygon -2064490 true true 149 72 183 72 167 88 149 89 137 71 152 71
+Line -6459832 false 147 76 171 78
+
+centaur
+false
+0
+Polygon -6459832 true false 200 253 197 309 179 309 177 256 166 247 140 249 93 251 78 239 72 271 49 269 48 241 37 209 25 180 25 149 45 132 103 144 180 135 180 75 195 45 225 90 240 120 240 180 240 210 224 227
+Polygon -6459832 true false 73 270 86 311 62 309 48 268
+Polygon -6459832 true false 25 159 16 240 9 249 23 258 25 245 39 168
+Circle -1184463 true false 191 30 60
+Polygon -1184463 true false 180 135 240 210 240 120 225 90 195 45 180 75 180 135
+Circle -16777216 true false 228 42 10
+Polygon -16777216 true false 213 37 184 64 180 93 180 119 178 142 160 143 141 143 144 137 158 134 167 133 172 129 172 120 174 114 175 97 175 88 175 77 177 72 177 70 180 61 182 58 182 53 184 51 189 48 190 45 195 34 198 33 201 32 211 32
+Line -16777216 false 221 37 234 41
+Circle -2064490 true false 225 116 8
+
+column
+false
+0
+Rectangle -7500403 true true 90 90 210 270
+Polygon -1 true false 210 270 255 240 255 60 210 90
+Polygon -13345367 true false 90 90 45 60 45 240 90 270
+Polygon -11221820 true false 45 60 90 30 210 30 255 60 210 90 90 90
+
+cyclops
+false
+0
+Polygon -955883 true false 105 90 120 195 90 285 105 300 135 300 150 225 165 300 195 300 210 285 180 195 195 90
+Polygon -1 true false 60 195 90 210 114 154 120 195 180 195 187 157 210 210 240 195 195 90 165 90 150 105 150 150 135 90 105 90
+Circle -955883 true false 110 5 80
+Rectangle -955883 true false 127 79 172 94
+Polygon -13345367 true false 120 90 120 180 120 195 90 285 105 300 135 300 150 225 165 300 195 300 210 285 180 195 180 90 172 89 165 135 135 135 127 90
+Line -16777216 false 225 90 270 90
+Line -16777216 false 225 15 225 90
+Line -16777216 false 270 15 270 90
+Line -16777216 false 247 15 247 90
+Rectangle -6459832 true false 240 90 255 300
+Circle -1 true false 129 21 42
+Circle -7500403 true true 134 27 31
+Circle -1 true false 139 32 21
+Circle -16777216 true false 142 36 14
+Polygon -6459832 true false 116 4 113 21 71 33 71 40 109 48 117 34 144 27 180 26 188 36 224 23 222 14 178 16 167 0
+
+house
+false
+0
+Rectangle -7500403 true true 45 120 255 285
+Rectangle -16777216 true false 120 210 180 285
+Polygon -7500403 true true 15 120 150 15 285 120
+Line -16777216 false 30 120 270 120
+
+medusa
+false
+0
+Polygon -10899396 true false 165 212 174 230 205 227 240 257 270 302 255 257 215 215 169 217
+Polygon -10899396 true false 135 212 126 230 95 227 60 257 30 302 45 257 85 215 131 217
+Polygon -10899396 true false 165 81 135 81 90 165 210 165 165 81
+Polygon -14835848 true false 150 19 120 30 120 45 130 66 144 81 127 96 129 113 144 134 136 185 121 195 114 217 120 255 135 270 165 270 180 255 188 218 181 195 165 184 157 134 170 115 173 95 156 81 171 66 181 42 180 30
+Polygon -14835848 true false 165 17 174 35 205 32 240 62 270 107 255 62 215 20 169 22
+Polygon -10899396 true false 176 62 216 45 252 44 296 77 260 35 217 32 173 49
+Polygon -13840069 true false 170 45 200 60 245 75 290 105 248 65 216 56 170 30
+Line -7500403 true 120 36 75 45
+Line -7500403 true 75 45 90 15
+Line -7500403 true 180 35 225 45
+Line -7500403 true 225 45 210 15
+Polygon -13840069 true false 130 45 100 60 55 75 10 105 52 65 84 56 130 30
+Polygon -14835848 true false 124 62 84 45 48 44 4 77 40 35 83 32 127 49
+Polygon -10899396 true false 135 17 126 35 95 32 60 62 30 107 45 62 85 20 131 22
+Circle -2674135 true false 133 35 12
+Circle -2674135 true false 152 36 12
+Circle -2674135 true false 138 53 20
+
+neanderthal
+false
+13
+Circle -6459832 true false 110 20 80
+Polygon -6459832 true false 108 89 123 194 93 299 108 299 138 299 153 224 168 299 198 299 213 299 183 194 198 89
+Rectangle -7500403 true false 135 75 172 94
+Polygon -6459832 true false 195 90 254 157 225 180 165 105
+Polygon -6459832 true false 105 90 45 154 75 180 135 105
+Polygon -16777216 true false 105 60 195 60 180 120 135 120 105 60
+Line -6459832 false 150 225 165 225
+Polygon -16777216 true false 120 45 105 45 195 45 180 15 120 15 105 45
+Polygon -16777216 true false 120 45 105 75 105 45
+Circle -16777216 true false 149 43 12
+Circle -16777216 true false 152 46 6
+Circle -16777216 true false 172 42 12
+Polygon -10899396 true false 145 203 137 221 145 221 143 237 150 233 152 246 156 234 159 236 155 226 154 222 170 225 153 204 149 198 146 206
+Polygon -6459832 true false 149 72 183 72 167 88 149 89 137 71 152 71
+Line -2064490 true 147 76 171 78
+Rectangle -955883 true false 225 75 240 285
+Polygon -16777216 true false 217 77 217 77 232 36 247 77
+
+person
+false
+0
+Circle -7500403 true true 110 5 80
+Polygon -7500403 true true 105 90 120 195 90 285 105 300 135 300 150 225 165 300 195 300 210 285 180 195 195 90
+Rectangle -7500403 true true 127 79 172 94
+Polygon -7500403 true true 195 90 240 150 225 180 165 105
+Polygon -7500403 true true 105 90 60 150 75 180 135 105
+
+pterodactyl
+true
+0
+Polygon -7500403 true true 150 75 165 75
+Polygon -7500403 true true 133 91 148 16 163 91 138 117 163 121 208 91 298 151 238 136 208 136 163 181 178 211 163 226 178 241 163 241 163 226 163 196 148 181 148 196 148 181 133 196 133 241 118 241 133 226 118 211 133 181 88 136 58 136 -2 151 103 91 133 121 158 118 133 91
+Circle -7500403 true true 125 113 50
+Circle -7500403 true true 139 96 16
+Rectangle -7500403 true true 140 89 155 115
+Rectangle -7500403 true true 127 218 134 232
+Rectangle -7500403 true true 163 219 167 237
+
+spartan
+false
+13
+Rectangle -955883 true false 225 60 240 255
+Circle -6459832 true false 110 20 80
+Polygon -6459832 true false 108 89 123 194 93 299 108 299 138 299 153 224 168 299 198 299 213 299 183 194 198 89
+Rectangle -7500403 true false 135 75 172 94
+Polygon -6459832 true false 195 90 254 157 225 180 165 105
+Polygon -6459832 true false 105 90 45 154 75 180 135 105
+Polygon -16777216 true false 105 60 195 60 178 96 127 94 105 60
+Polygon -1184463 true false 120 45 105 45 195 45 180 15 120 15 105 45
+Polygon -1184463 true false 120 45 105 75 105 45
+Circle -16777216 true false 149 43 12
+Circle -16777216 true false 152 46 6
+Circle -16777216 true false 172 42 12
+Polygon -6459832 true false 149 72 183 72 167 88 149 89 137 71 152 71
+Line -16777216 false 147 76 171 78
+Polygon -16777216 true false 219 60 232 14 245 61 220 60
+Polygon -1184463 true false 105 90 120 90 150 135 180 135 195 90 195 150 180 195 120 195 105 120 105 90
+Circle -955883 true false -4 101 127
+Circle -16777216 false false 131 93 14
+Circle -16777216 false false 149 100 10
+Circle -16777216 false false 165 91 13
+Circle -16777216 false false 167 104 13
+Circle -16777216 false false 153 113 10
+Polygon -955883 true false 120 195 180 195 210 255 90 255 120 195
+Circle -16777216 false false 6 111 108
+Circle -1184463 true false 18 123 85
+Circle -2674135 true false 39 144 42
+
+st tiger
+false
+0
+Polygon -1 true false 257 130 272 127 282 133 293 146 293 157 290 165 287 164 287 153 287 144 284 141 276 137 267 136 256 133
+Polygon -16777216 true false 253 133 245 131 245 133
+Polygon -955883 true false 2 194 13 197 30 191 38 193 38 205 20 226 20 257 27 265 38 266 40 260 31 253 31 230 60 206 68 198 75 209 66 228 65 243 82 261 84 268 100 267 103 261 77 239 79 231 100 207 98 196 119 201 143 202 160 195 166 210 172 213 173 238 167 251 160 248 154 265 169 264 178 247 186 240 198 260 200 271 217 271 219 262 207 258 195 230 192 198 210 184 227 164 242 144 259 145 284 151 277 141 293 140 299 134 297 127 273 119 270 105
+Polygon -955883 true false -1 195 14 180 36 166 40 153 53 140 82 131 134 133 159 126 188 115 227 108 236 102 238 98 268 86 269 92 281 87 269 103 269 113
+Circle -16777216 true false 59 141 10
+Circle -16777216 true false 108 169 7
+Circle -16777216 true false 102 139 9
+Circle -16777216 true false 128 154 11
+Circle -16777216 true false 71 162 8
+Circle -16777216 true false 168 139 12
+Circle -16777216 true false 149 135 9
+Circle -16777216 true false 196 123 12
+
+tree
+false
+0
+Circle -7500403 true true 118 3 94
+Rectangle -6459832 true false 120 195 180 300
+Circle -7500403 true true 65 21 108
+Circle -7500403 true true 116 41 127
+Circle -7500403 true true 45 90 120
+Circle -7500403 true true 104 74 152
+
+@#$#@#$#@
+NetLogo 5.0.4
+@#$#@#$#@
+@#$#@#$#@
+@#$#@#$#@
+@#$#@#$#@
+@#$#@#$#@
+default
+0.0
+-0.2 0 1.0 0.0
+0.0 1 1.0 0.0
+0.2 0 1.0 0.0
+link direction
+true
+0
+Line -7500403 true 150 150 90 180
+Line -7500403 true 150 150 210 180
+
+@#$#@#$#@
+0
+@#$#@#$#@

@@ -1,0 +1,25 @@
+body {
+/*background-image:url('wood.jpg');*/
+background-image:url('oeb2.bmp');
+text-align:center;
+text-shadow:5px 5px 5px #000000;}
+h1, h2 {
+color:#000082;}
+a:link {
+text-decoration:none;
+color:#0000FF;}
+a:visited {
+text-decoration:none;
+color:#0000FF;}
+a:hover {
+text-decoration:none;
+color:#0000FF;}
+a:active {
+text-decoration:none;
+color:#000000;}
+#type {
+position:relative;
+right:2cm;}
+#people {
+position:relative;
+left:2cm;}

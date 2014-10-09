@@ -1,0 +1,117 @@
+﻿1. January 8:
+   1. Alon:
+      1. Fixed killing of enemies
+      2. Wrote working algorithm for attacks
+      3. Created attack “personalities”
+   1. Joseph:
+      1. Fixed a bug which made game crash when attacking tigers with long-range
+      2. Improved power-up design
+1. January 9:
+   1. Alon:
+      1. Created enemy “personalities”
+      2. Simplified code
+      3. Organized code
+      4. Bug fixes for attacks and powerups
+             B.  Joseph
+                      1.  Made a timer which controls power-ups
+                             2.  Made different kinds of power-ups.
+                             3.  Made player heal if no enemies in radius 1.5
+1. January 10:
+   1. Alon
+      1. Enhanced gameplay
+      2. Health settings altered
+      3. Random enemy spawn created
+      4. Health meter for player added
+      5. Level-changing algorithm planned out
+      6. Enemy bug fixes
+         1. Fast enemies swarm the player, but do no damage
+   1. Joseph
+      1. Random enemy spawn created
+      2. Powerup editing
+      3. Random enemy bug glitches fixed
+         1. Enemies do not lose health, even though attacked
+      1. Player regeneration added
+1. January 13:
+   1. Alon
+      1. Worked on level changing algorithm
+      2. Troubleshooting and minor edits
+      3. Level 1 perfected
+      4. Arrangement of code edited for optimal viewability
+   1. Joseph
+      1. Worked on level changing algorithm
+      2. Troubleshooting and minor edits
+1. January 14:
+   1. Alon
+      1. Perfected level changing algorithm
+         1. Edited specific “go” and “setup” commands for functionality
+         2. Bug fixes for perfection
+      1. Character design
+      2. Maze design
+      3. Level 2 finished
+      4. Created “partner” program for assisting the player in understanding the iconography.
+   1. Joseph
+      1. Character design
+      2. Level changing algorithm bug fixes
+1. January 15:
+   1. Alon
+      1. Level creation
+      2. Character creation
+      3. Debugging
+      4. Work on Art Guide
+   1. Joseph
+      1. Level creation
+      2. Character creation
+      3. Debugging
+1. January 16:
+   1. Alon
+      1. Level creation
+      2. Character creation
+      3. Debugging
+      4. Work on Art Guide
+   1. Joseph
+      1. Level creation
+      2. Character creation
+      3. Debugging
+1. January 17:
+   1. Alon
+      1. Level creation
+      2. Character creation
+      3. Work on Art Guide
+      4. Boss planning
+   1. Joseph
+      1. Level creation
+      2. Character creation
+      3. Interface reconfiguration
+      4. Debugging
+      5. Storyline addition
+      6. Boss planning
+1. January 18:
+   1. Alon
+      1. Design fixes
+      2. Continuation of Companion Guide (formerly Art Guide)
+      3. Initial work on boss 1
+      4. Character design issues fixed
+   1. Joseph
+      1. Worked on boss 6, but major errors
+1. January 19:
+   1. Alon:
+      1. Finished boss 1, began work on boss 2
+   1. Joseph
+      1.  Worked on bosses 5, 7, and 8.  Tried to fix boss 6
+1. January 20:
+   1. Alon
+      1. Finished + perfected bosses 1-4
+      2. Tested code all the way through
+      3. Finished Companion Guide
+      4. Worked on Info tab
+      5. Minor bug fixes (barely any to start with)
+      6. Final collaboration with Joseph
+   1. Joseph
+      1. Finally fixed boss 6.  Then discovered new errors.  Fixed those
+      2. Small adjustments
+      3. Added more creative stuff.
+      4. Fixed boss 8 which had a sudden problem
+      5. Worked on Info tab
+      6. Made code neater
+      7. Acknowledged existence of sound bugs, but it’s based on what computer you have.
+      8. Final collaboration with Alon

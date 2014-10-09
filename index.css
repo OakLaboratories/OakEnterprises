@@ -1,0 +1,34 @@
+body {
+background-image:url('wood.jpg');
+/*background-image:url('Oak Enterprises background 1.bmp');*/
+color:#00CC00;
+text-shadow:5px 5px 5px #000000;
+font-family:lucida console;}
+a:link {
+text-decoration:none;
+color:#00FFFF;}
+a:visited {
+text-decoration:none;
+color:#00FFFF;}
+a:hover {
+text-decoration:none;
+color:#00FFFF;}
+a:active {
+text-decoration:none;
+color:#0000FF;}
+#title {
+text-align:center;}
+#form {
+position:relative;
+text-align:center;
+z-index:1;}
+.dual {
+font-size: 115%;}
+#type {
+position:absolute;
+text-align:left;
+left: 15%;}
+#creator {
+position:absolute;
+text-align:right;
+right: 15%;}

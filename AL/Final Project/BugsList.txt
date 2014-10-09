@@ -1,0 +1,15 @@
+﻿A Maze of Historic Proportions Bugs:
+
+
+1. Players die too quickly, too many enemies (resolved)
+2. Some chunks of text loop over and over, even if they are not told to (resolved)
+3. There is a large delay in playing sound (works sometimes, it depends on computer)
+4. Bosses didn’t behave properly (resolved)
+5. Enemies didn’t follow the behaviors written out for them (resolved)
+6. Player can’t move (resolved)
+7. Map would generate incorrectly, causing glitches (resolved)
+8. Doesn’t restart correctly if you die (resolved)
+9. Level 8 wouldn’t cycle through the possible characters offered (resolved)
+10. Sounds would repeat when not asked to (resolved)
+11. There is an error when you walk into a wall (resolved)
+12. Can’t move between levels because turtles can’t run an observer command (resolved)

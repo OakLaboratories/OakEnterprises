@@ -1,0 +1,31 @@
+body {
+background-image:url('wood.jpg');
+color:#00CC00;
+text-shadow:5px 5px 5px #000000;}
+a:link {
+text-decoration:none;
+color:#00FFFF;}
+a:visited {
+text-decoration:none;
+color:#00FFFF;}
+a:hover {
+text-decoration:none;
+color:#00FFFF;}
+a:active {
+text-decoration:none;
+color:#0000FF;}
+#title {
+text-align:center;}
+#left {
+position:absolute;
+text-align: left;
+left:10%;}
+#right {
+position:absolute;
+text-align: right;
+right:10%;}
+#homepage {
+position:relative;
+text-align:center;
+left:45%;
+top:14cm;}

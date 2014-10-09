@@ -1,0 +1,38 @@
+body {
+background-image:url('wood.jpg');
+color:#00CC00;
+text-shadow:5px 5px 5px #000000;}
+a:link {
+text-decoration:none;
+color:#00FFFF;}
+a:visited {
+text-decoration:none;
+color:#00FFFF;}
+a:hover {
+text-decoration:none;
+color:#00FFFF;}
+a:active {
+text-decoration:none;
+color:#0000FF;}
+#title {
+text-align:center;}
+#games {
+position:absolute;
+left:5%;
+top: 3.8cm;
+text-align:left;
+z-index:2;}
+#puzzles {
+position:relative;
+text-align:center;
+z-index:1;}
+#models {
+position:absolute;
+right:5%;
+top: 3.8cm;
+text-align:right;
+z-index:3;}
+#form {
+position:relative;
+text-align:center;
+z-index:1;}
