@@ -1,53 +1,125 @@
 extensions [bitmap]
-globals [counter speedR life fence-xcor1 fence-xcor2]
+globals [counter speedR]
+breed [characters character]
+breed [obstacles obstacle]
+turtles-own [tempShape tempColor tempSize defColor defShape defSize]
+characters-own [life]
+obstacles-own [fence-xcor1 fence-xcor2]
 
 to setup
   ca
   reset-ticks
   set counter 0
-  crt 1 [set shape "fence" set color brown set size 40 set xcor 43 set heading 270]
-  crt 1 [set shape "sheep" set color white set size 20 set xcor -21.5]
+  create-obstacles 1 [set shape "fence" set color brown set size 40 set xcor 43 set heading 270]
+  create-characters 1 [set shape "sheep" set color white set size 20 set xcor -21.5]
   output-type 0
   output-print " fences jumped over"
-  set life 5
+  ask characters [set life 5]
   import-pcolors "Fence_Jumper_background.bmp"
+  ask turtles [
+    set defColor color
+    set defShape shape
+    set defSize size
+    ]
+end
+
+to reset
+  clear-output
+  clear-turtles
+  reset-ticks
+  set counter 0
+  create-obstacles 1 [set shape "fence" set color brown set size 40 set xcor 43 set heading 270]
+  create-characters 1 [set shape "sheep" set color white set size 20 set xcor -21.5]
+  output-type 0
+  output-print " fences jumped over"
+  ask characters [set life 5]
+  ask turtles [
+    set defColor color
+    set defShape shape
+    set defSize size
+    ]
 end
 
 to fence
   fd 21.5
   wait speedR
-  if any? other turtles-here [set color red set life life - 1]
-  if xcor = -64.5 [set color brown]
+  if xcor = -64.5 [set color defColor]
+  if any? characters-here [
+    set color red
+    ask characters [set life life - 1]
+  ]
 end
 
 to go
   set speedR (1 / (speed * 5))
-  ask turtles with [shape = "fence"] [fence]
+  ask obstacles [fence]
   clear-output
   output-type counter
   output-print " fences jumped over"
   wait speedR
-  if life = 1 [ask turtles with [shape = "sheep"] [set color red]]
-  if life <= 0 [
-    ask turtles with [shape = "sheep"] [set heading 90 set color red fd 21.5 set heading 45 set shape "kebab"]
+  if [life] of character 1 = 1 [ask characters [set defColor red set color red]]
+  if [life] of character 1 <= 0 [
+    ask turtles [
+      set shape defShape
+      set size defSize
+      set color defColor
+    ]
+    ask characters [
+      set heading 90 
+      set color red 
+      fd 21.5 
+      set heading 45 
+      set shape "kebab"
+    ]
     output-type "Game over!"
     stop
   ]
   tick
   if (speed != 5) and (ticks mod 50 = 0) [set speed speed + 0.5]
-  if speed = 5 and ticks mod 51 = 0 [set speed ((random 10 + 1) / 2)]
+  if Dali?  and ticks mod 10 = 0 [surreal]
+  ask turtles [callColors]
 end
 
 to jumping
-  if life <= 0 [stop]
   set heading 0
   fd 28
   ask other turtles [set fence-xcor1 xcor repeat 2 [fence] set fence-xcor2 xcor]
   set heading 180
   fd 28
+  if any? obstacles-here [
+    ask obstacles [set color red ]
+    set life life - 1
+  ]
   wait speedR
-  if (fence-xcor1 > xcor) and (xcor > fence-xcor2) [set counter counter + 1]
-  ask other turtles-here [set color red set life life - 1]
+  if ([fence-xcor1] of obstacle 0 > xcor) and (xcor > [fence-xcor2] of obstacle 0) [set counter counter + 1]
+end
+
+to surreal
+  ask characters [
+    set tempShape [shape] of obstacle 0 
+    set tempColor [defColor] of obstacle 0
+    set tempSize [size] of obstacle 0
+  ]
+  ask obstacles [
+    set tempShape [shape] of character 1
+    set tempColor [defColor] of character 1
+    set tempSize [size] of character 1
+  ]
+  ask characters [
+    set shape tempShape 
+    set color tempColor
+    set size tempSize
+  ]
+  ask obstacles [
+    set shape tempShape
+    set color tempColor
+    set size tempSize
+  ]
+end
+
+to callColors
+  if shape = "sheep" [set defColor white]
+  if shape = "fence" [set defColor brown]
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -78,10 +150,10 @@ ticks
 30.0
 
 BUTTON
-45
-75
-179
-108
+41
+56
+175
+89
 Play/Pause
 go
 T
@@ -95,18 +167,18 @@ NIL
 1
 
 BUTTON
-45
-42
-179
-75
-Welcome to the Farm!
+41
+23
+102
+56
+Initialize
 setup
 NIL
 1
 T
 OBSERVER
 NIL
-S
+NIL
 NIL
 NIL
 1
@@ -124,7 +196,7 @@ BUTTON
 186
 249
 Jump!
-ask turtles with [shape = \"sheep\"] [jumping]
+ask characters [jumping]
 NIL
 1
 T
@@ -156,10 +228,38 @@ MONITOR
 106
 249
 Lives left:
-life
+[life] of character 1
 0
 1
 11
+
+BUTTON
+101
+23
+175
+56
+Reset
+reset
+NIL
+1
+T
+OBSERVER
+NIL
+R
+NIL
+NIL
+1
+
+SWITCH
+22
+274
+125
+307
+Dali?
+Dali?
+0
+1
+-1000
 
 @#$#@#$#@
 ## WHAT IS IT?
