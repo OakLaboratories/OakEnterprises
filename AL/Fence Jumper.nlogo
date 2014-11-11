@@ -1,4 +1,3 @@
-extensions [bitmap ]
 globals [counter speedR]
 breed [characters character]
 breed [obstacles obstacle]
