@@ -1,3 +1,4 @@
+extensions [bitmap]
 globals [counter speedR]
 breed [characters character]
 breed [obstacles obstacle]
@@ -195,7 +196,7 @@ BUTTON
 186
 249
 Jump!
-ask characters [jumping]
+ifelse [life] of character 1 = 0 [stop] [ask characters [jumping]]
 NIL
 1
 T
@@ -215,7 +216,7 @@ speed
 speed
 1
 5
-2
+3
 1
 1
 NIL
