@@ -15,7 +15,7 @@ to setup
   output-type 0
   output-print " fences jumped over"
   ask characters [set life 5]
-  import-pcolors "Fence_Jumper_background.bmp"
+  import-drawing "Fence_Jumper_background.bmp"
   ask turtles [
     set defColor color
     set defShape shape
@@ -707,7 +707,7 @@ Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 
 @#$#@#$#@
-NetLogo 5.0.5
+NetLogo 5.0.4
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
