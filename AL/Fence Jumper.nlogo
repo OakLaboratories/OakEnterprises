@@ -2,6 +2,7 @@ extensions [bitmap]
 globals [counter speedR]
 breed [characters character]
 breed [obstacles obstacle]
+patches-own [direcUp pdefColor]
 turtles-own [tempShape tempColor tempSize defColor defShape defSize]
 characters-own [life]
 obstacles-own [fence-xcor1 fence-xcor2]
@@ -21,6 +22,10 @@ to setup
     set defShape shape
     set defSize size
     ]
+  ask patches [
+    set pdefColor pcolor
+    set direcUp true
+  ]
 end
 
 to reset
@@ -38,6 +43,10 @@ to reset
     set defShape shape
     set defSize size
     ]
+  ask patches [
+    set pdefColor pcolor
+    set direcUp true
+  ]
 end
 
 to fence
@@ -71,6 +80,9 @@ to go
       set heading 45 
       set shape "kebab"
     ]
+    ask patches [
+      set pcolor pdefColor
+    ]
     output-type "Game over!"
     stop
   ]
@@ -78,6 +90,9 @@ to go
   if (speed != 5) and (ticks mod 50 = 0) [set speed speed + 0.5]
   if Dali?  and ticks mod 10 = 0 [surreal]
   ask turtles [callColors]
+  if Disco? [
+    ask patches [disco]
+  ]
 end
 
 to jumping
@@ -120,6 +135,12 @@ end
 to callColors
   if shape = "sheep" [set defColor white]
   if shape = "fence" [set defColor brown]
+end
+
+to disco
+  if pcolor >= 0 and pcolor < 10 [set direcUp true]
+  if pcolor >= 130 and pcolor < 140 [set direcUp false]
+  ifelse direcUp [set pcolor (pcolor + 10)] [set pcolor pcolor - 10]
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -196,7 +217,7 @@ BUTTON
 186
 249
 Jump!
-ifelse [life] of character 1 = 0 [stop] [ask characters [jumping]]
+ifelse [life] of character 1 <= 0 [stop] [ask characters [jumping]]
 NIL
 1
 T
@@ -216,7 +237,7 @@ speed
 speed
 1
 5
-3
+4
 1
 1
 NIL
@@ -251,12 +272,23 @@ NIL
 1
 
 SWITCH
-22
-274
-125
-307
+25
+256
+115
+289
 Dali?
 Dali?
+0
+1
+-1000
+
+SWITCH
+25
+289
+115
+322
+Disco?
+Disco?
 0
 1
 -1000
