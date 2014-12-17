@@ -107,7 +107,7 @@ CHOOSER
 Image
 Image
 "Crayons.jpg" "Rose.jpg" "Cthulhu.jpg" "Evolution_of_Man.jpg" "Earth.jpg" "quatum_physics-eye.jpg" "market-jerusalem.jpg" "velociraptor-velociped.png" "Alon the Troll.jpg" "terror-error.jpg" "Goya's Painting.jpg" "Don Kirk.jpg" "Edward's Pain.jpg"
-7
+2
 
 BUTTON
 52
@@ -247,7 +247,7 @@ INPUTBOX
 205
 491
 Original-color
-3
+33
 1
 0
 Color
@@ -258,7 +258,7 @@ INPUTBOX
 205
 551
 New-color
-133
+126
 1
 0
 Color
@@ -269,7 +269,7 @@ BUTTON
 294
 551
 Replace
-replace
+replace\nask patches [gray-check]
 NIL
 1
 T
@@ -331,7 +331,7 @@ INPUTBOX
 173
 341
 Filter-color
-65
+15
 1
 0
 Color
@@ -342,7 +342,7 @@ BUTTON
 288
 341
 Add Filter
-filter-it
+filter-it\nask patches [gray-check]
 NIL
 1
 T
@@ -696,7 +696,7 @@ Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 
 @#$#@#$#@
-NetLogo 5.0.4
+NetLogo 5.0.5
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
@@ -704,9 +704,9 @@ NetLogo 5.0.4
 @#$#@#$#@
 default
 0.0
--0.2 0 1.0 0.0
+-0.2 0 0.0 1.0
 0.0 1 1.0 0.0
-0.2 0 1.0 0.0
+0.2 0 0.0 1.0
 link direction
 true
 0
