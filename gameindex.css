@@ -1,16 +1,16 @@
 body {
-background-image:url('wood.jpg');
+background-image:#00FFFF;
 color:#00CC00;
 text-shadow:5px 5px 5px #000000;}
 a:link {
 text-decoration:none;
-color:#00FFFF;}
+color:#4CC417;}
 a:visited {
 text-decoration:none;
-color:#00FFFF;}
+color:#4CC417;}
 a:hover {
 text-decoration:none;
-color:#00FFFF;}
+color:#4CC417;}
 a:active {
 text-decoration:none;
 color:#0000FF;}
